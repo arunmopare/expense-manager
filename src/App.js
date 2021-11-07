@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect,
+} from "react-router-dom";
 
 import NewExpense from "./components/NewExpense/NewExpense";
 import Expenses from "./components/Expenses/Expenses";
-import { Navbar } from "react-bootstrap";
+import { Col, Container, Navbar, Row } from "react-bootstrap";
 import NavigationBar from "./components/Navbar/Navbar";
+import Login from "./components/Login/Login";
+import Profile from "./components/Profile/Profile";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const DUMMY_EXPENSES = [
   {
@@ -29,39 +38,23 @@ const DUMMY_EXPENSES = [
 ];
 
 const App = () => {
-  // return React.createElement(
-  //   'div',
-  //   {},
-  //   React.createElement('h2', {}, "Let's get started!"),
-  //   React.createElement(Expenses, { items: expenses })
-  // );
-  const [expenses, setExpenses] = useState(DUMMY_EXPENSES);
+  const { user, isAuthenticated } = useAuth0();
 
-  const addExpenseHandler = (expense) => {
-    setExpenses((prevExpenses) => {
-      return [expense, ...prevExpenses];
-    });
-  };
   return (
     <Router>
       <NavigationBar></NavigationBar>
       <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/home">Home</Link>
-            </li>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-            <li>
-              <Link to="/users">Users</Link>
-            </li>
-          </ul>
-        </nav>
         <Switch>
-          <Route path="/home">
+          {isAuthenticated && <Redirect exact from="/" to="/add-new" />}
+
+          <Route path="/add-new">
             <Home />
+          </Route>
+          <Route path="/login">
+            <Login></Login>
+          </Route>
+          <Route path="/my-profile">
+            <Profile></Profile>
           </Route>
         </Switch>
       </div>
@@ -69,6 +62,8 @@ const App = () => {
   );
 };
 function Home() {
+  const { user, isAuthenticated } = useAuth0();
+
   const [expenses, setExpenses] = useState(DUMMY_EXPENSES);
 
   const addExpenseHandler = (expense) => {
@@ -78,6 +73,13 @@ function Home() {
   };
   return (
     <div>
+      <Container>
+        <Row>
+          <Col>
+            <h2 className="text-center mt-3">Hello, {user.name}</h2>
+          </Col>
+        </Row>
+      </Container>
       <NewExpense onAddExpense={addExpenseHandler} />
       <Expenses items={expenses} />
     </div>

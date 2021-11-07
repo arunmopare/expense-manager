@@ -11,18 +11,19 @@ const ExpenseItem = (props) => {
       <CardList className="expense-item">
         <Container>
           <Row>
-            <Col><ExpenseDate date={props.date} /></Col>
-            <Col></Col>
-            <Col></Col>
+            <Col>
+              <ExpenseDate date={props.date} />
+            </Col>
+            <Col>
+              <div className="expense-item__description">
+                <h2>{props.title}</h2>
+                <div style={{ color: "white" }} className="expense-item__price">
+                  ${props.amount}
+                </div>
+              </div>
+            </Col>
           </Row>
         </Container>
-        
-        <div className="">
-          <h2>{props.title}</h2>
-          <div style={{ color: "white" }} className="expense-item__price">
-            ${props.amount}
-          </div>
-        </div>
       </CardList>
     </li>
   );
