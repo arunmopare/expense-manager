@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,13 +14,16 @@ import NavigationBar from "./components/Navbar/Navbar";
 import Login from "./components/Login/Login";
 import Profile from "./components/Profile/Profile";
 import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
 
-const DUMMY_EXPENSES = [
+const api = "http://localhost:3001";
+
+let DUMMY_EXPENSES = [
   {
     id: "e1",
-    title: "Toilet Paper",
+    title: "Toiletss Paper",
     amount: 94.12,
-    date: new Date(2020, 7, 14),
+    date: new Date("2021-11-07T00:00:00.000Z"),
   },
   { id: "e2", title: "New TV", amount: 799.49, date: new Date(2021, 2, 12) },
   {
@@ -45,7 +48,11 @@ const App = () => {
       <NavigationBar></NavigationBar>
       <div>
         <Switch>
-          {isAuthenticated && <Redirect exact from="/" to="/add-new" />}
+          {isAuthenticated ? (
+            <Redirect exact from="/" to="/add-new" />
+          ) : (
+            <Redirect exact from="/" to="/login"></Redirect>
+          )}
 
           <Route path="/add-new">
             <Home />
@@ -66,17 +73,40 @@ function Home() {
 
   const [expenses, setExpenses] = useState(DUMMY_EXPENSES);
 
-  const addExpenseHandler = (expense) => {
-    setExpenses((prevExpenses) => {
-      return [expense, ...prevExpenses];
-    });
+  // useEffect(() => {
+  //   axios
+  //     .post(`http://localhost:3001/expenses`, {
+  //       owner: "arunmopare",
+  //     })
+  //     .then((res) => {
+  //       setExpenses(res);
+  //       console.log(res);
+  //     });
+  // });
+
+  const addExpenseHandler = async (expense) => {
+    let newExp = expense;
+    newExp.owner = user.sub;
+    await axios
+      .post(`${api}/expense`, newExp)
+      .then(function (response) {
+        console.log(response);
+        setExpenses((prevExpenses) => {
+          return [expense, ...prevExpenses];
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
   return (
     <div>
       <Container>
         <Row>
           <Col>
-            <h2 className="text-center mt-3">Hello, {user.name}</h2>
+            {isAuthenticated && (
+              <h2 className="text-center mt-3">Hello, {user.name}</h2>
+            )}
           </Col>
         </Row>
       </Container>
