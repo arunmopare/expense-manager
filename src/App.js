@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,20 +14,23 @@ import NavigationBar from "./components/Navbar/Navbar";
 import Login from "./components/Login/Login";
 import Profile from "./components/Profile/Profile";
 import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
 
-const DUMMY_EXPENSES = [
+const baseApiUrl = "http://localhost:3001";
+
+var DUMMY_EXPENSES = [
   {
     id: "e1",
     title: "Toilet Paper",
     amount: 94.12,
-    date: new Date(2020, 7, 14),
+    date: new Date("2021-12-16T00:00:00.000Z"),
   },
   { id: "e2", title: "New TV", amount: 799.49, date: new Date(2021, 2, 12) },
   {
     id: "e3",
     title: "Car Insurance",
     amount: 294.67,
-    date: new Date(2021, 2, 28),
+    date: new Date("2021, 2, 28"),
   },
   {
     id: "e4",
@@ -62,21 +65,50 @@ const App = () => {
   );
 };
 function Home() {
+  const [filterYear, setFilterYear] = useState("");
+  const [expenses, setExpenses] = useState([]);
   const { user, isAuthenticated } = useAuth0();
-
-  const [expenses, setExpenses] = useState(DUMMY_EXPENSES);
+  console.log("User", user);
+  React.useEffect(() => {
+    if (user !== undefined) {
+      console.log("Getting Expenses");
+      axios
+        .post(`${baseApiUrl}/expenses`, { owner: user.email })
+        .then((response) => {
+          const ex = response.data;
+          ex.map((e) => {
+            e.date = new Date(e.date);
+          });
+          setExpenses(ex);
+        });
+    }
+  }, [expenses]);
 
   const addExpenseHandler = (expense) => {
-    setExpenses((prevExpenses) => {
-      return [expense, ...prevExpenses];
-    });
+    if (user !== undefined) {
+      const userName = user.email;
+      expense.owner = userName;
+      axios
+        .post(`${baseApiUrl}/expense`, expense)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      setExpenses((prevExpenses) => {
+        return [expense, ...prevExpenses];
+      });
+    }
   };
   return (
     <div>
       <Container>
         <Row>
           <Col>
-            <h2 className="text-center mt-3">Hello, {user.name}</h2>
+            <h2 className="text-center mt-3">
+              Hello, {user === undefined ? "" : user.name}!
+            </h2>
           </Col>
         </Row>
       </Container>
